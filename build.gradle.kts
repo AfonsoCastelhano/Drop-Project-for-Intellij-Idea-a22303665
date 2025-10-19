@@ -1,7 +1,7 @@
 plugins {
-    id("java") // Java support
-    alias(libs.plugins.kotlin) // Kotlin support
-    alias(libs.plugins.gradleIntelliJPlugin) // Gradle IntelliJ Plugin
+    id("java")
+    alias(libs.plugins.kotlin)
+    id("org.jetbrains.intellij") version "1.17.4"
     id("org.jetbrains.kotlinx.kover") version "0.7.3"
     id("com.google.devtools.ksp").version("1.9.10-1.0.13")
 }
