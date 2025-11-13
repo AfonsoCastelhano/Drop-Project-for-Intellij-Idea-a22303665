@@ -17,7 +17,7 @@ import java.util.concurrent.TimeUnit
 
 
 class GptInteraction(var project: Project) {
-    private val model = "gpt-3.5-turbo"
+    private val model = "gpt-4-turbo"
     private val separator = FileSystems.getDefault().separator
     //private val logFileDirectory = "${System.getProperty("user.home")}${separator}Documents${separator}Drop Project Plugin${separator}"
     private val logFileDirectory = project.let { FileEditorManager.getInstance(it).project.basePath.toString() }
@@ -44,10 +44,10 @@ class GptInteraction(var project: Project) {
     }
 
     fun executePrompt(prompt: String): String {
+        addPromptMessage(prompt) // adiciona a mensagem do user à lista
 
         val chatGptResponse = processPrompt()
 
-        //add prompt and response to chatLog
         chatLog.add(Message("system", chatGptResponse))
 
         if (chatGptResponse.contains("Error")) {
@@ -60,15 +60,16 @@ class GptInteraction(var project: Project) {
     private fun processPrompt(): String {
 
         val settingsState = SettingsState.getInstance()
-        val apiKey = settingsState.openAiToken
+        val apiKey = ""
 
         if (apiKey == "") {
             DefaultNotification.notify(project, "No API key set")
             return "Error: No API key set"
         }
 
+        var apiUrl = "https://modelos.ai.ulusofona.pt/v1/completions"
 
-        val apiUrl = "https://api.openai.com/v1/chat/completions"
+        //apiUrl = "https://api.openai.com/v1/completions"
 
         val messagesJson = messages.joinToString(",") {
             """
@@ -93,15 +94,40 @@ class GptInteraction(var project: Project) {
             .writeTimeout(60, TimeUnit.SECONDS)
             .build()
 
-        val request = Request.Builder()
+        val builder = Request.Builder()
             .url(apiUrl)
             .addHeader("Content-Type", "application/json")
             .addHeader("Authorization", "Bearer $apiKey")
+
+        print("000" + builder + "\n")
+
+// 🔧 Suporte para novas chaves 'sk-proj-'
+        if (apiKey.startsWith("sk-proj-")) {
+            // Podes deixar "default" ou usar o ID real do teu projeto (ex: proj_abc123)
+            builder.addHeader("OpenAI-Project", "proj_8sQTuo7LxVtQB41bRrFEZiCc")
+
+            print("cuidado" + "\n")
+        }
+
+        val request = builder
             .post(requestBody.toRequestBody("application/json".toMediaTypeOrNull()))
             .build()
 
+        print("001" + request + "\n")
+
         try {
+
+            // okhttp3.Request$Builder@728eb99d001Request{method=POST, url=https://modelos.ai.ulusofona.pt/v1/completions, headers=[Content-Type:application/json, Authorization:Bearer sk-Oo32-A30q8CMaEMIzXG3Fg]}Exception in thread "DefaultDispatcher-worker-1" java.lang.NoClassDefFoundError: Could not initialize class kotlinx.coroutines.CoroutineExceptionHandlerImplKt
+            //	at kotlinx.coroutines.CoroutineExceptionHandlerKt.handleCoroutineException(CoroutineExceptionHandler.kt:33)
+            //	at kotlinx.coroutines.DispatchedTask.handleFatalException(DispatchedTask.kt:146)
+            //	at kotlinx.coroutines.DispatchedTask.run(DispatchedTask.kt:115)
+            //	at kotlinx.coroutines.scheduling.CoroutineScheduler.runSafely(CoroutineScheduler.kt:571)
+            //	at kotlinx.coroutines.scheduling.CoroutineScheduler$Worker.executeTask(CoroutineScheduler.kt:750)
+            //	at kotlinx.coroutines.scheduling.CoroutineScheduler$Worker.runWorker(CoroutineScheduler.kt:678)
+            //	at kotlinx.coroutines.scheduling.CoroutineScheduler$Worker.run(CoroutineScheduler.kt:665)
             val response = client.newCall(request).execute()
+
+            print("002" + response)
 
             //println("res0: $response")
 
