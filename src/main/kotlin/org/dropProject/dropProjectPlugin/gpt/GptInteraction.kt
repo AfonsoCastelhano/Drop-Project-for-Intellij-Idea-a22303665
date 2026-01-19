@@ -65,14 +65,14 @@ class GptInteraction(var project: Project) {
     private fun processPrompt(): String {
 
         val settingsState = SettingsState.getInstance()
-        val apiKey = ""
+        val apiKey = "INSERIR KEY"
 
         if (apiKey == "") {
             DefaultNotification.notify(project, "No API key set")
             return "Error: No API key set"
         }
 
-        var apiUrl = "https://modelos.ai.ulusofona.pt/v1/completions"
+        var apiUrl = "INSERIR O URL"
 
         //apiUrl = "https://api.openai.com/v1/completions"
 
@@ -93,11 +93,7 @@ class GptInteraction(var project: Project) {
             }
             """.trimIndent()
 
-        val client = OkHttpClient.Builder()
-            .connectTimeout(60, TimeUnit.SECONDS)
-            .readTimeout(60, TimeUnit.SECONDS)
-            .writeTimeout(60, TimeUnit.SECONDS)
-            .build()
+        val client = getUnsafeOkHttpClient()
 
         val builder = Request.Builder()
             .url(apiUrl)
