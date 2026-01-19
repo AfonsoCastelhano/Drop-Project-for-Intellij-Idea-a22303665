@@ -11,9 +11,14 @@ import org.dropProject.dropProjectPlugin.DefaultNotification
 import org.dropProject.dropProjectPlugin.settings.SettingsState
 import java.io.File
 import java.nio.file.FileSystems
+import java.security.SecureRandom
+import java.security.cert.X509Certificate
 import java.text.SimpleDateFormat
 import java.util.*
 import java.util.concurrent.TimeUnit
+import javax.net.ssl.SSLContext
+import javax.net.ssl.TrustManager
+import javax.net.ssl.X509TrustManager
 
 
 class GptInteraction(var project: Project) {
@@ -322,6 +327,46 @@ class GptInteraction(var project: Project) {
         chatLog = ArrayList<Message>()
         chatToSave = ArrayList<LogMessage>()
         messages = ArrayList<Message>()
+    }
+
+    fun getUnsafeOkHttpClient(): OkHttpClient {
+        try {
+            // Create a trust manager that does not validate certificate chains
+            val trustAllCerts = arrayOf<TrustManager>(
+                object : X509TrustManager {
+                    override fun checkClientTrusted(chain: Array<out X509Certificate>?, authType: String?) {}
+                    override fun checkServerTrusted(chain: Array<out X509Certificate>?, authType: String?) {}
+                    override fun getAcceptedIssuers(): Array<X509Certificate> = arrayOf()
+                }
+            )
+
+            // Install the all-trusting trust manager
+            val sslContext = SSLContext.getInstance("SSL")
+            sslContext.init(null, trustAllCerts, SecureRandom())
+
+            // Create an ssl socket factory with our all-trusting manager
+            val sslSocketFactory = sslContext.socketFactory
+
+            /*
+            val loggingInterceptor = HttpLoggingInterceptor { message ->
+                LOG.info(message)
+            }.apply {
+                level = HttpLoggingInterceptor.Level.BODY
+            }
+             */
+
+            val builder = OkHttpClient.Builder()
+//               .addInterceptor(loggingInterceptor)
+                .connectTimeout(60, TimeUnit.SECONDS)
+                .readTimeout(60, TimeUnit.SECONDS)
+                .writeTimeout(60, TimeUnit.SECONDS)
+            builder.sslSocketFactory(sslSocketFactory, trustAllCerts[0] as X509TrustManager)
+            builder.hostnameVerifier { _, _ -> true }  // Skip hostname verification
+
+            return builder.build()
+        } catch (e: Exception) {
+            throw RuntimeException(e)
+        }
     }
 
 }
