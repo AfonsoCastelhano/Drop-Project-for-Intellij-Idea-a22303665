@@ -2,69 +2,78 @@ package org.dropProject.dropProjectPlugin.settings
 
 import com.intellij.openapi.options.Configurable
 import org.dropProject.dropProjectPlugin.submissionComponents.UIGpt
-import org.jetbrains.annotations.Nls
 import javax.swing.JComponent
 
-class SettingsConfigurable : Configurable {
-    private var mySettingsComponent: SettingsComponent? = null
+// CONFIGURAÇÃO GERAL
+class GeneralSettingsConfigurable : Configurable {
+    private var component: GeneralSettingsComponent? = null
 
-    @Nls(capitalization = Nls.Capitalization.Title)
-    override fun getDisplayName(): String {
-        return "SDK: Application Settings Example"
-    }
-
-    override fun getPreferredFocusedComponent(): JComponent? {
-        return mySettingsComponent?.getPreferredFocusedComponent()
-    }
+    override fun getDisplayName(): String = "General Settings"
 
     override fun createComponent(): JComponent {
-        mySettingsComponent = SettingsComponent()
-        return mySettingsComponent!!.getPanel()
+        component = GeneralSettingsComponent()
+        return component!!.getPanel()
     }
 
     override fun isModified(): Boolean {
-        val settings: SettingsState = SettingsState.getInstance()
-        return (!mySettingsComponent?.getServerURL().equals(settings.serverURL)) or
-                (!mySettingsComponent?.getNameField().equals(settings.username)) or
-                (!mySettingsComponent?.getNumberField().equals(settings.usernumber)) or
-                (!mySettingsComponent?.getTokenField().contentEquals(settings.token)) or
-                (!mySettingsComponent?.getOpenAiTokenField().contentEquals(settings.openAiToken)) or
-                (mySettingsComponent?.isAutoSendPromptSelected() != settings.autoSendPrompt) or
-                (mySettingsComponent?.getSentenceList() != settings.sentenceList)
+        val s = SettingsState.getInstance()
+        return component?.getServerURL() != s.serverURL ||
+                component?.getName() != s.username ||
+                component?.getNumber() != s.usernumber ||
+                component?.getToken() != s.token
     }
 
     override fun apply() {
-        val settings: SettingsState = SettingsState.getInstance()
-        settings.serverURL = mySettingsComponent?.getServerURL()!!
-        settings.username = mySettingsComponent?.getNameField()!!
-        settings.usernumber = mySettingsComponent?.getNumberField()!!
-        settings.token = mySettingsComponent?.getTokenField()!!
-        settings.openAiToken = mySettingsComponent?.getOpenAiTokenField()!!
-        settings.autoSendPrompt = mySettingsComponent?.isAutoSendPromptSelected() ?: false
-        settings.sentenceList = (mySettingsComponent?.getSentenceList() as MutableList<String>?)!!
-        UIGpt.instance1?.updatePhrases(mySettingsComponent?.getSentenceList() as MutableList<String>)
+        val s = SettingsState.getInstance()
+        s.serverURL = component?.getServerURL() ?: ""
+        s.username = component?.getName() ?: ""
+        s.usernumber = component?.getNumber() ?: ""
+        s.token = component?.getToken() ?: ""
     }
 
     override fun reset() {
-        val settings: SettingsState = SettingsState.getInstance()
-        settings.serverURL.let { mySettingsComponent?.setServerURL(it) }
-        settings.username.let { mySettingsComponent?.setNameField(it) }
-        settings.usernumber.let { mySettingsComponent?.setNumberField(it) }
-        settings.token.let { mySettingsComponent?.setTokenField(it) }
-        settings.openAiToken.let { mySettingsComponent?.setOpenAiTokenField(it) }
-        settings.autoSendPrompt.let { mySettingsComponent?.setAutoSendPrompt(it) }
-        settings.sentenceList.let { mySettingsComponent?.setSentenceList(it) }
-        settings.sentenceList.let {
-            if (it.isEmpty()) {
-                it.addAll(listOf("Find the bug", "Improve the performance", "Explain this code", "Write tests for this function"))
-                val uiGpt = UIGpt.getInstance()
-                uiGpt.updatePhrases(mutableListOf("Find the bug", "Improve the performance", "Explain this code", "Write tests for this function"))
-            }
-            mySettingsComponent?.setSentenceList(it)
-        }
+        val s = SettingsState.getInstance()
+        component?.setServerURL(s.serverURL)
+        component?.setName(s.username)
+        component?.setNumber(s.usernumber)
+        component?.setToken(s.token)
     }
 
-    override fun disposeUIResources() {
-        mySettingsComponent = null
+    override fun disposeUIResources() { component = null }
+}
+
+// CONFIGURAÇÃO LLM/GENAI
+class LLMSettingsConfigurable : Configurable {
+    private var component: LLMSettingsComponent? = null
+
+    override fun getDisplayName(): String = "LLM/GenAI Settings"
+
+    override fun createComponent(): JComponent {
+        component = LLMSettingsComponent()
+        return component!!.getPanel()
     }
+
+    override fun isModified(): Boolean {
+        val s = SettingsState.getInstance()
+        return component?.getOpenAiToken() != s.openAiToken ||
+                component?.isAutoSend() != s.autoSendPrompt ||
+                component?.getSentences() != s.sentenceList
+    }
+
+    override fun apply() {
+        val s = SettingsState.getInstance()
+        s.openAiToken = component?.getOpenAiToken() ?: ""
+        s.autoSendPrompt = component?.isAutoSend() ?: false
+        s.sentenceList = component?.getSentences()?.toMutableList() ?: mutableListOf()
+        UIGpt.instance1?.updatePhrases(s.sentenceList)
+    }
+
+    override fun reset() {
+        val s = SettingsState.getInstance()
+        component?.setOpenAiToken(s.openAiToken)
+        component?.setAutoSend(s.autoSendPrompt)
+        component?.setSentences(s.sentenceList)
+    }
+
+    override fun disposeUIResources() { component = null }
 }

@@ -51,13 +51,18 @@
         <notificationGroup id="Default Notification" displayType="BALLOON"/>
         <fileEditorProvider
                 implementation="org.dropProject.dropProjectPlugin.EditorTabProvider"/>
+
         <applicationConfigurable parentId="tools"
-                                 instance="org.dropProject.dropProjectPlugin.settings.SettingsConfigurable"
-                                 id="org.dropProject.dropProjectPlugin.settings.SettingsConfigurable"
-                                 displayName="Drop Project Settings"/>
+                                 instance="org.dropProject.dropProjectPlugin.settings.GeneralSettingsConfigurable"
+                                 id="org.dropProject.dropProjectPlugin.settings.GeneralSettingsConfigurable"
+                                 displayName="General Settings"/>
+
+        <applicationConfigurable parentId="org.dropProject.dropProjectPlugin.settings.GeneralSettingsConfigurable"
+                                 instance="org.dropProject.dropProjectPlugin.settings.LLMSettingsConfigurable"
+                                 id="org.dropProject.dropProjectPlugin.settings.LLMSettingsConfigurable"
+                                 displayName="LLM/GenAI Settings"/>
+
         <applicationService serviceImplementation="org.dropProject.dropProjectPlugin.settings.SettingsState"/>
-
-
     </extensions>
     <actions>
         <action id="org.dropProject.dropProjectPlugin.gpt.SendToGptEditor"
