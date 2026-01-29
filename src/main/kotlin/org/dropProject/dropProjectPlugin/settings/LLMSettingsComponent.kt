@@ -1,18 +1,17 @@
 package org.dropProject.dropProjectPlugin.settings
 
-import com.intellij.ui.JBColor
 import com.intellij.ui.TitledSeparator
 import com.intellij.ui.components.*
 import com.intellij.util.ui.FormBuilder
-import org.dropProject.dropProjectPlugin.submissionComponents.UIGpt
 import java.awt.*
 import javax.swing.*
 
 class LLMSettingsComponent {
     private val mainPanel: JPanel
+    private val llmServerURL = JBTextField() // Novo campo
     private val openAiTokenField = JBPasswordField()
     private val showOpenAiToken = JCheckBox("Show")
-    private val autoSendPrompt = JCheckBox("<html>Send prompt automatically.<br>If checked, GPT will be prompted as soon as the \"Ask GPT\" button is clicked.</html>")
+    private val autoSendPrompt = JCheckBox("<html>Send prompt automatically.<br>If checked, GenAI will be prompted as soon as the \"Ask GenAI\" button is clicked.</html>")
 
     private val sentenceListModel = DefaultListModel<String>()
     private val sentenceList = JBList(sentenceListModel)
@@ -22,9 +21,9 @@ class LLMSettingsComponent {
     private val removeButton = JButton("Remove")
 
     init {
-        val openAiTokenPanel = JPanel(BorderLayout())
-        openAiTokenPanel.add(openAiTokenField, BorderLayout.CENTER)
-        openAiTokenPanel.add(showOpenAiToken, BorderLayout.EAST)
+        val tokenPanel = JPanel(BorderLayout())
+        tokenPanel.add(openAiTokenField, BorderLayout.CENTER)
+        tokenPanel.add(showOpenAiToken, BorderLayout.EAST)
 
         showOpenAiToken.addActionListener {
             openAiTokenField.echoChar = if (showOpenAiToken.isSelected) 0.toChar() else '\u2022'
@@ -35,8 +34,9 @@ class LLMSettingsComponent {
         removeButton.addActionListener { removeSentence() }
 
         mainPanel = FormBuilder.createFormBuilder()
-            .addLabeledComponent(JBLabel("OpenAI API Key: "), openAiTokenPanel, 1, false)
-            .addLabeledComponent(JBLabel("Send to ChatGPT: "), autoSendPrompt, 1, false)
+            .addLabeledComponent(JBLabel("GenAI Server URL: "), llmServerURL, 1, false)
+            .addLabeledComponent(JBLabel("API Key: "), tokenPanel, 1, false) // Removido "OpenAI"
+            .addLabeledComponent(JBLabel("Send to GenAI: "), autoSendPrompt, 1, false) // Alterado para GenAI
             .addComponent(TitledSeparator("Prompt Suffix Settings"))
             .addComponent(createAddEditRemovePanel())
             .addComponentFillVertically(JPanel(), 0)
@@ -81,10 +81,16 @@ class LLMSettingsComponent {
     }
 
     fun getPanel(): JPanel = mainPanel
+
+    fun getLlmServerURL(): String = llmServerURL.text
+    fun setLlmServerURL(text: String) { llmServerURL.text = text }
+
     fun getOpenAiToken(): String = String(openAiTokenField.password)
     fun setOpenAiToken(t: String) { openAiTokenField.text = t }
+
     fun isAutoSend(): Boolean = autoSendPrompt.isSelected
     fun setAutoSend(b: Boolean) { autoSendPrompt.isSelected = b }
+
     fun getSentences(): List<String> = sentenceListModel.elements().toList()
     fun setSentences(l: List<String>) {
         sentenceListModel.clear()

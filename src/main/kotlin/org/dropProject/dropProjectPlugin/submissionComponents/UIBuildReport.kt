@@ -78,7 +78,7 @@ internal class UIBuildReport(private val project: Project) {
                                 text(error)
                             }
                             row {
-                                button("Send to ChatGPT") {
+                                button("Send to GenAI") {
                                     sendToChatGPTAction(error)
                                 }
                             }

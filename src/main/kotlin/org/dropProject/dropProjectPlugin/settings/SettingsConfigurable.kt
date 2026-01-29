@@ -4,7 +4,6 @@ import com.intellij.openapi.options.Configurable
 import org.dropProject.dropProjectPlugin.submissionComponents.UIGpt
 import javax.swing.JComponent
 
-// CONFIGURAÇÃO GERAL
 class GeneralSettingsConfigurable : Configurable {
     private var component: GeneralSettingsComponent? = null
 
@@ -42,7 +41,6 @@ class GeneralSettingsConfigurable : Configurable {
     override fun disposeUIResources() { component = null }
 }
 
-// CONFIGURAÇÃO LLM/GENAI
 class LLMSettingsConfigurable : Configurable {
     private var component: LLMSettingsComponent? = null
 
@@ -55,13 +53,15 @@ class LLMSettingsConfigurable : Configurable {
 
     override fun isModified(): Boolean {
         val s = SettingsState.getInstance()
-        return component?.getOpenAiToken() != s.openAiToken ||
+        return component?.getLlmServerURL() != s.llmServerURL ||
+                component?.getOpenAiToken() != s.openAiToken ||
                 component?.isAutoSend() != s.autoSendPrompt ||
                 component?.getSentences() != s.sentenceList
     }
 
     override fun apply() {
         val s = SettingsState.getInstance()
+        s.llmServerURL = component?.getLlmServerURL() ?: ""
         s.openAiToken = component?.getOpenAiToken() ?: ""
         s.autoSendPrompt = component?.isAutoSend() ?: false
         s.sentenceList = component?.getSentences()?.toMutableList() ?: mutableListOf()
@@ -70,6 +70,7 @@ class LLMSettingsConfigurable : Configurable {
 
     override fun reset() {
         val s = SettingsState.getInstance()
+        component?.setLlmServerURL(s.llmServerURL)
         component?.setOpenAiToken(s.openAiToken)
         component?.setAutoSend(s.autoSendPrompt)
         component?.setSentences(s.sentenceList)

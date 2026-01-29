@@ -14,11 +14,12 @@ import javax.annotation.Nullable
 class SettingsState : PersistentStateComponent<SettingsState> {
 
     var serverURL: String = "https://deisi.ulusofona.pt/drop-project"
+    var llmServerURL: String = "https://api.openai.com/v1" // Novo campo para o servidor GenAI
     var username: String = ""
     var usernumber: String = ""
     var token: String = ""
     var openAiToken: String = ""
-    var autoSendPrompt: Boolean = false // New property
+    var autoSendPrompt: Boolean = false
     var publicAssignments: MutableList<String> = mutableListOf()
     var sentenceList: MutableList<String> = mutableListOf()
 
