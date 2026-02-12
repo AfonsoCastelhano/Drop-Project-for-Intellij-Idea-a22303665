@@ -147,11 +147,12 @@ class UIGpt() {
     private val ratingButtons = false;
 
     init {
-        //textField.emptyText.text = "Send a message"
-        //textField.preferredSize = Dimension(400, 30)  // Set a preferred size for the textField
-        textField.font = Font("Dialog", Font.PLAIN, 10)
-
+        // Configuração da fonte e margens
+        textField.font = Font("Dialog", Font.PLAIN, 12)
         textField.margin = JBUI.insets(5)
+        textField.lineWrap = true // Ativa quebra de linha automática
+        textField.wrapStyleWord = true // Quebra apenas em palavras completas
+        textField.rows = 4 // Define 4 linhas de altura por padrão
 
         textField.addKeyListener(object : KeyAdapter() {
             override fun keyPressed(e: KeyEvent) {
@@ -159,7 +160,7 @@ class UIGpt() {
                     if (e.isShiftDown) {
                         textField.append("\n")
                     } else if (!waitingForResponse) {
-                        e.consume()  // Prevent newline character from being added
+                        e.consume()
                         sendPrompt()
                     }
                 }
@@ -174,11 +175,9 @@ class UIGpt() {
 
         responseArea.apply {
             contentType = "text/html"
-
             editorKit = HTMLEditorKitBuilder().build().also {
                 it.styleSheet.addStyleSheet(chatHtml.getStyle())
             }
-
             isEditable = false
             foreground = JBColor.foreground()
             background = JBColor.background()
@@ -190,24 +189,16 @@ class UIGpt() {
                 revalidate()
                 setCaretPosition(document.length)
             }
-
         }
 
         val settingsState = SettingsState.getInstance()
         phrases = ArrayList(settingsState.sentenceList)
-
-        phrases.add(0, "") //Option that doesn't add anything to the prompt
-
+        phrases.add(0, "")
 
         phraseComboPanel = createComboBoxPanel()
-        //phraseComboBox.preferredSize = Dimension(200, 30)
-
-
-        val scope = CoroutineScope(Dispatchers.Default)
 
         usefulButton.addActionListener {
             gptInteraction.markLastResponseAs(true)
-
         }
 
         notUsefulButton.addActionListener {
@@ -223,18 +214,17 @@ class UIGpt() {
             }
         }
 
-        sendButton = JButton("Send Message")
+        // Alterado para Ask GenAI
+        sendButton = JButton("Ask GenAI")
         sendButton.addMouseListener(object : MouseAdapter() {
             override fun mousePressed(e: MouseEvent?) = sendPrompt()
         })
 
         inputAndSubmitPanel = JPanel(GridBagLayout())
-
-
         val gbc = GridBagConstraints()
-        gbc.insets = JBUI.insets(3) // Uniform padding around components
+        gbc.insets = JBUI.insets(3)
 
-        // Configuration for the first row with a single component spanning two columns
+        // Row 0: Copy Code Button
         gbc.gridx = 0
         gbc.gridy = 0
         gbc.gridwidth = 2
@@ -242,58 +232,59 @@ class UIGpt() {
         gbc.fill = GridBagConstraints.BOTH
         inputAndSubmitPanel.add(copyCodeButton, gbc)
 
-
+        // Row 1: Rating Buttons (se ativos)
         if(ratingButtons) {
-            // Configuration for the second row with two components
-            gbc.gridwidth = 1 // Reset to default gridwidth
-
-            // Useful Button
+            gbc.gridwidth = 1
             gbc.gridx = 0
             gbc.gridy = 1
-            gbc.weightx = 0.5 // Each button gets half the space
-            gbc.anchor = GridBagConstraints.CENTER // Center the button in its cell
+            gbc.weightx = 0.5
+            gbc.anchor = GridBagConstraints.CENTER
             inputAndSubmitPanel.add(usefulButton, gbc)
 
-            // Not Useful Button
             gbc.gridx = 1
             gbc.gridy = 1
-            gbc.weightx = 0.5 // Ensuring even split of horizontal space
-            gbc.anchor = GridBagConstraints.CENTER // Center the button in its cell
             inputAndSubmitPanel.add(notUsefulButton, gbc)
         }
 
-        // TextField row
+        // --- NOVA ALTERAÇÃO: LABEL ACIMA DA CAIXA ---
+        // Row 2: Input Label
+        val inputLabel = JLabel("Insira aqui a sua prompt:")
+        inputLabel.font = inputLabel.font.deriveFont(Font.BOLD)
         gbc.gridx = 0
         gbc.gridy = 2
-        gbc.gridwidth = 2 // TextField spans two columns
-        gbc.weightx = 1.0 // Takes up remaining space
+        gbc.gridwidth = 2
+        gbc.weightx = 1.0
+        gbc.fill = GridBagConstraints.HORIZONTAL
+        inputAndSubmitPanel.add(inputLabel, gbc)
+
+        // Row 3: TextField (agora no gridy 3)
+        gbc.gridx = 0
+        gbc.gridy = 3
+        gbc.gridwidth = 2
+        gbc.weightx = 1.0
+        gbc.weighty = 1.0
         gbc.fill = GridBagConstraints.BOTH
         inputAndSubmitPanel.add(JBScrollPane(textField), gbc)
 
-        // Phrase Combo Panel and CheckBox
-        gbc.gridwidth = 1 // Reset to default gridwidth
-        gbc.weightx = 0.5 // Split the row evenly
-
-        // Phrase Combo Panel
+        // Row 4: Suffix Combo e Checkbox
+        gbc.gridwidth = 1
+        gbc.weightx = 0.5
         gbc.gridx = 0
-        gbc.gridy = 3
+        gbc.gridy = 4
         gbc.fill = GridBagConstraints.CENTER
         inputAndSubmitPanel.add(phraseComboPanel, gbc)
 
-        // CheckBox
         gbc.gridx = 1
-        gbc.gridy = 3
-        gbc.fill = GridBagConstraints.CENTER
+        gbc.gridy = 4
         inputAndSubmitPanel.add(askTwiceCheckBox, gbc)
 
-        // Send Button spans two columns
+        // Row 5: Send Button
         gbc.gridx = 0
-        gbc.gridy = 4
+        gbc.gridy = 5
         gbc.gridwidth = 2
         gbc.weightx = 1.0
         gbc.fill = GridBagConstraints.BOTH
         inputAndSubmitPanel.add(sendButton, gbc)
-
 
         askTwiceCheckBox.addActionListener {
             askTwice = askTwiceCheckBox.isSelected
@@ -303,28 +294,21 @@ class UIGpt() {
             resetChat()
         }
 
-        inputAndSubmitPanel.preferredSize = Dimension(600, 210) // Increased height to accommodate the taller button
-
-        responseArea.size = Dimension(200, -1)
-
+        // Ajuste da altura do painel para caber a label e a caixa maior
+        inputAndSubmitPanel.preferredSize = Dimension(600, 220)
 
         val panel = JPanel()
         panel.layout = BorderLayout()
         panel.add(resetButton, BorderLayout.NORTH)
         panel.add(responseArea, BorderLayout.CENTER)
         panel.add(inputAndSubmitPanel, BorderLayout.SOUTH)
-        panel.size = Dimension(800, -1)
-
 
         val scrollPane = JBScrollPane(panel)
         val viewport: JViewport = scrollPane.viewport
         viewport.scrollMode = JViewport.SIMPLE_SCROLL_MODE
         scrollPane.horizontalScrollBarPolicy = JBScrollPane.HORIZONTAL_SCROLLBAR_NEVER
         scrollPane.verticalScrollBarPolicy = JBScrollPane.VERTICAL_SCROLLBAR_ALWAYS
-        viewport.extentSize = Dimension(0, 0)
-
         uI = scrollPane
-
     }
 
     private fun updateTextFieldSize() {
