@@ -128,7 +128,7 @@ class UIGpt() {
 
     private var project = ProjectManager.getInstance().openProjects[0]
     private var gptInteraction = GptInteraction(project)
-    private var textField = JBTextArea(3, 20)
+    private var textField = JBTextArea(4, 20)
     private var phrases = ArrayList<String>()
     private var sendButton = JButton()
     private var phraseComboBox = JComboBox(phrases.toArray())
@@ -303,7 +303,7 @@ class UIGpt() {
             resetChat()
         }
 
-        inputAndSubmitPanel.preferredSize = Dimension(600, 180) // Increased height to accommodate the taller button
+        inputAndSubmitPanel.preferredSize = Dimension(600, 210) // Increased height to accommodate the taller button
 
         responseArea.size = Dimension(200, -1)
 
