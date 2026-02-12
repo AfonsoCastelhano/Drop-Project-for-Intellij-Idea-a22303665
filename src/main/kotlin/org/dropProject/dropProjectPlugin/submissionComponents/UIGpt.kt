@@ -147,18 +147,18 @@ class UIGpt() {
     private val ratingButtons = false;
 
     init {
-        // Configuração da fonte e margens
+        // Configuração da fonte e margens do campo de texto
         textField.font = Font("Dialog", Font.PLAIN, 12)
         textField.margin = JBUI.insets(5)
         textField.lineWrap = true // Ativa quebra de linha automática
         textField.wrapStyleWord = true // Quebra apenas em palavras completas
         textField.rows = 4 // Define 4 linhas de altura por padrão
 
-        // --- NOVA ALTERAÇÃO: PLACEHOLDER (TEXTO DE SUGESTÃO) ---
+        // Texto de sugestão (Placeholder) em itálico
         textField.emptyText.text = "Insira aqui a sua prompt"
         textField.emptyText.setFont(Font("Dialog", Font.ITALIC, 12))
-        // -------------------------------------------------------
 
+        // Listener para enviar com Enter e fazer nova linha com Shift+Enter
         textField.addKeyListener(object : KeyAdapter() {
             override fun keyPressed(e: KeyEvent) {
                 if (e.keyCode == KeyEvent.VK_ENTER) {
@@ -178,6 +178,7 @@ class UIGpt() {
             override fun changedUpdate(e: DocumentEvent) = updateTextFieldSize()
         })
 
+        // Configuração da área de mensagens (HTML)
         responseArea.apply {
             contentType = "text/html"
             editorKit = HTMLEditorKitBuilder().build().also {
@@ -219,17 +220,23 @@ class UIGpt() {
             }
         }
 
-        // Alterado para Ask GenAI
+        // Botão de envio renomeado para GenAI
         sendButton = JButton("Ask GenAI")
         sendButton.addMouseListener(object : MouseAdapter() {
             override fun mousePressed(e: MouseEvent?) = sendPrompt()
         })
 
+        // Listener para o botão de limpar chat
+        resetButton.addActionListener {
+            resetChat()
+        }
+
+        // --- PAINEL DE INPUT E BOTÕES (GRIDBAGLAYOUT) ---
         inputAndSubmitPanel = JPanel(GridBagLayout())
         val gbc = GridBagConstraints()
         gbc.insets = JBUI.insets(3)
 
-        // Row 0: Copy Code Button
+        // Row 0: Botão Copy Code
         gbc.gridx = 0
         gbc.gridy = 0
         gbc.gridwidth = 2
@@ -237,7 +244,7 @@ class UIGpt() {
         gbc.fill = GridBagConstraints.BOTH
         inputAndSubmitPanel.add(copyCodeButton, gbc)
 
-        // Row 1: Rating Buttons (se ativos)
+        // Row 1: Botões de Rating (se ativos)
         if(ratingButtons) {
             gbc.gridwidth = 1
             gbc.gridx = 0
@@ -251,21 +258,19 @@ class UIGpt() {
             inputAndSubmitPanel.add(notUsefulButton, gbc)
         }
 
-        // Row 2: Input Label
+        // Row 2: Label da caixa de texto
         val inputLabel = JLabel("Insira aqui a sua prompt:")
         inputLabel.font = inputLabel.font.deriveFont(Font.BOLD)
         gbc.gridx = 0
         gbc.gridy = 2
         gbc.gridwidth = 2
-        gbc.weightx = 1.0
         gbc.fill = GridBagConstraints.HORIZONTAL
         inputAndSubmitPanel.add(inputLabel, gbc)
 
-        // Row 3: TextField (dentro de ScrollPane)
+        // Row 3: Caixa de Texto (JTextArea com 4 linhas dentro de um ScrollPane)
         gbc.gridx = 0
         gbc.gridy = 3
         gbc.gridwidth = 2
-        gbc.weightx = 1.0
         gbc.weighty = 1.0
         gbc.fill = GridBagConstraints.BOTH
         inputAndSubmitPanel.add(JBScrollPane(textField), gbc)
@@ -282,37 +287,46 @@ class UIGpt() {
         gbc.gridy = 4
         inputAndSubmitPanel.add(askTwiceCheckBox, gbc)
 
-        // Row 5: Send Button
+        // Row 5: Botão Ask GenAI
         gbc.gridx = 0
         gbc.gridy = 5
         gbc.gridwidth = 2
-        gbc.weightx = 1.0
         gbc.fill = GridBagConstraints.BOTH
         inputAndSubmitPanel.add(sendButton, gbc)
+
+        // Row 6: Botão Clear Chat (FIXO EM BAIXO)
+        gbc.gridx = 0
+        gbc.gridy = 6
+        gbc.gridwidth = 2
+        gbc.fill = GridBagConstraints.BOTH
+        inputAndSubmitPanel.add(resetButton, gbc)
 
         askTwiceCheckBox.addActionListener {
             askTwice = askTwiceCheckBox.isSelected
         }
 
-        resetButton.addActionListener {
-            resetChat()
+        // Ajuste da altura do painel para acomodar todos os elementos
+        inputAndSubmitPanel.preferredSize = Dimension(600, 250)
+
+        // --- MONTAGEM FINAL DA ESTRUTURA (BORDERLAYOUT) ---
+        val mainViewPanel = JPanel(BorderLayout())
+
+        // Criamos o ScrollPane APENAS para as mensagens
+        val chatScrollPane = JBScrollPane(responseArea)
+        chatScrollPane.horizontalScrollBarPolicy = JBScrollPane.HORIZONTAL_SCROLLBAR_NEVER
+        chatScrollPane.verticalScrollBarPolicy = JBScrollPane.VERTICAL_SCROLLBAR_ALWAYS
+        chatScrollPane.viewport.scrollMode = JViewport.SIMPLE_SCROLL_MODE
+
+        // Organizamos no painel principal: chat no centro, controlos no fundo
+        mainViewPanel.add(chatScrollPane, BorderLayout.CENTER)
+        mainViewPanel.add(inputAndSubmitPanel, BorderLayout.SOUTH)
+
+        // Atribuímos à variável da classe envolvida num scroll externo invisível
+        uI = JBScrollPane(mainViewPanel).apply {
+            border = null
+            horizontalScrollBarPolicy = JBScrollPane.HORIZONTAL_SCROLLBAR_NEVER
+            verticalScrollBarPolicy = JBScrollPane.VERTICAL_SCROLLBAR_NEVER
         }
-
-        // Ajuste da altura do painel
-        inputAndSubmitPanel.preferredSize = Dimension(600, 220)
-
-        val panel = JPanel()
-        panel.layout = BorderLayout()
-        panel.add(resetButton, BorderLayout.NORTH)
-        panel.add(responseArea, BorderLayout.CENTER)
-        panel.add(inputAndSubmitPanel, BorderLayout.SOUTH)
-
-        val scrollPane = JBScrollPane(panel)
-        val viewport: JViewport = scrollPane.viewport
-        viewport.scrollMode = JViewport.SIMPLE_SCROLL_MODE
-        scrollPane.horizontalScrollBarPolicy = JBScrollPane.HORIZONTAL_SCROLLBAR_NEVER
-        scrollPane.verticalScrollBarPolicy = JBScrollPane.VERTICAL_SCROLLBAR_ALWAYS
-        uI = scrollPane
     }
 
     private fun updateTextFieldSize() {
