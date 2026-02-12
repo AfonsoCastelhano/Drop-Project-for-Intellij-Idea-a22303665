@@ -154,6 +154,11 @@ class UIGpt() {
         textField.wrapStyleWord = true // Quebra apenas em palavras completas
         textField.rows = 4 // Define 4 linhas de altura por padrão
 
+        // --- NOVA ALTERAÇÃO: PLACEHOLDER (TEXTO DE SUGESTÃO) ---
+        textField.emptyText.text = "Insira aqui a sua prompt"
+        textField.emptyText.setFont(Font("Dialog", Font.ITALIC, 12))
+        // -------------------------------------------------------
+
         textField.addKeyListener(object : KeyAdapter() {
             override fun keyPressed(e: KeyEvent) {
                 if (e.keyCode == KeyEvent.VK_ENTER) {
@@ -246,7 +251,6 @@ class UIGpt() {
             inputAndSubmitPanel.add(notUsefulButton, gbc)
         }
 
-        // --- NOVA ALTERAÇÃO: LABEL ACIMA DA CAIXA ---
         // Row 2: Input Label
         val inputLabel = JLabel("Insira aqui a sua prompt:")
         inputLabel.font = inputLabel.font.deriveFont(Font.BOLD)
@@ -257,7 +261,7 @@ class UIGpt() {
         gbc.fill = GridBagConstraints.HORIZONTAL
         inputAndSubmitPanel.add(inputLabel, gbc)
 
-        // Row 3: TextField (agora no gridy 3)
+        // Row 3: TextField (dentro de ScrollPane)
         gbc.gridx = 0
         gbc.gridy = 3
         gbc.gridwidth = 2
@@ -294,7 +298,7 @@ class UIGpt() {
             resetChat()
         }
 
-        // Ajuste da altura do painel para caber a label e a caixa maior
+        // Ajuste da altura do painel
         inputAndSubmitPanel.preferredSize = Dimension(600, 220)
 
         val panel = JPanel()
