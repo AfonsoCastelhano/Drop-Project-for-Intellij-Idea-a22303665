@@ -83,7 +83,7 @@ class DropProjectToolWindow(var project: Project) {
 
         tabbedPane.setTabComponentAt(
             1,
-            createTabComponent(tabbedPane, "ChatGPT", AllIcons.Ide.Like, gui.buildComponents(), false))
+            createTabComponent(tabbedPane, "GenAI", AllIcons.Ide.Like, gui.buildComponents(), false))
 
 
         horizontalSplitter = OnePixelSplitter(true, 0.04f)

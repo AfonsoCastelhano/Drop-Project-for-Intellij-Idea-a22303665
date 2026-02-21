@@ -48,7 +48,7 @@
         <applicationConfigurable parentId="tools"
                                  instance="org.dropProject.dropProjectPlugin.settings.GeneralSettingsConfigurable"
                                  id="org.dropProject.dropProjectPlugin.settings.GeneralSettingsConfigurable"
-                                 displayName="General Settings"/>
+                                 displayName="Drop Project General Settings"/>
 
         <applicationConfigurable parentId="org.dropProject.dropProjectPlugin.settings.GeneralSettingsConfigurable"
                                  instance="org.dropProject.dropProjectPlugin.settings.LLMSettingsConfigurable"

@@ -7,7 +7,7 @@ import javax.swing.JComponent
 class GeneralSettingsConfigurable : Configurable {
     private var component: GeneralSettingsComponent? = null
 
-    override fun getDisplayName(): String = "General Settings"
+    override fun getDisplayName(): String = "DropProject General Settings"
 
     override fun createComponent(): JComponent {
         component = GeneralSettingsComponent()
